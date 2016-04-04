@@ -1,12 +1,56 @@
+/**
+ * @file ntopt.c
+ * @author CuBeatSystems
+ * @author Shinichiro Nakamura
+ * @copyright
+ * ===============================================================
+ * Natural Tiny Shell (NT-Shell) Version 0.3.0
+ * ===============================================================
+ * Copyright (c) 2010-2015 Shinichiro Nakamura
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following
+ * conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 #include "ntopt.h"
 
+/**
+ * @brief Is the character delimiter?
+ * @param c The character.
+ * @retval true It's a delimiter.
+ * @retval false It's not a delimiter.
+ */
 #define IS_DELIM(c) \
     (((c) == '\r') || ((c) == '\n') || ((c) == '\t') || ((c) == '\0') || ((c) == ' '))
 
 static int ntopt_get_count(const char *str);
-static char *ntopt_get_text(const char *str, const int n, char *buf, int siz);
+static char *ntopt_get_text(
+        const char *str, const int n, char *buf, int siz, int *len);
 
-int ntopt_get_count(const char *str)
+/**
+ * @brief Get the sentence count of the given text string.
+ * @param str A text string.
+ * @return Count of the given sentence.
+ */
+static int ntopt_get_count(const char *str)
 {
     int cnt = 0;
     int wc = 0;
@@ -25,15 +69,27 @@ int ntopt_get_count(const char *str)
     return cnt;
 }
 
-char *ntopt_get_text(const char *str, const int n, char *buf, int siz)
+/**
+ * @brief Get the sentence of the given text string.
+ * @param str A text string.
+ * @param n Index number. (0 to ntopt-get_count(str) - 1)
+ * @param buf The pointer to a stored buffer.
+ * @param siz The size of the stored buffer.
+ * @param len The stored string length.
+ * @retval !NULL Success. The pointer to the buffer.
+ * @retval NULL Failure.
+ */
+static char *ntopt_get_text(
+        const char *str, const int n, char *buf, int siz, int *len)
 {
     int cnt = 0;
     int wc = 0;
     char *p = (char *)str;
+    *len = 0;
     while (*p) {
         if (!IS_DELIM(*p)) {
             wc++;
-            if ((wc == 1)) {
+            if (wc == 1) {
                 if (cnt == n) {
                     char *des = buf;
                     int cc = 0;
@@ -47,6 +103,7 @@ char *ntopt_get_text(const char *str, const int n, char *buf, int siz)
                         p++;
                     }
                     *des = '\0';
+                    *len = cc;
                     return buf;
                 }
                 cnt++;
@@ -56,64 +113,44 @@ char *ntopt_get_text(const char *str, const int n, char *buf, int siz)
         }
         p++;
     }
-    return '\0';
+    return (char *)0;
 }
 
-int ntopt_parse(const char *str, void (*func)(int argc, char **argv))
+/**
+ * @brief Parse the given text string.
+ * @param str A text string.
+ * @param func The callback function.
+ * @param extobj An external object for the callback function.
+ * @return The return value from the callback.
+ */
+int ntopt_parse(const char *str, NTOPT_CALLBACK func, void *extobj)
 {
     int argc;
-    char argv[NTOPT_MAXCNT_ARGC][NTOPT_MAXLEN_ARGV];
-    char *argvp[NTOPT_MAXCNT_ARGC];
+    char argv[NTOPT_TEXT_MAXLEN];
+    char *argvp[NTOPT_TEXT_MAXARGS];
     int i;
+    int total;
+    char *p;
 
     argc = ntopt_get_count(str);
-    if (NTOPT_MAXCNT_ARGC <= argc) {
-        return -1;
+    if (NTOPT_TEXT_MAXARGS <= argc) {
+        argc = NTOPT_TEXT_MAXARGS;
     }
 
+    total = 0;
+    p = &argv[0];
     for (i = 0; i < argc; i++) {
-        argvp[i] = ntopt_get_text(str, i, argv[i], sizeof(argv[i]));
+        int len;
+        argvp[i] = ntopt_get_text(
+                str, i, p, NTOPT_TEXT_MAXLEN - total, &len);
+        if (total + len + 1 < NTOPT_TEXT_MAXLEN) {
+            p += len + 1;
+            total += len + 1;
+        } else {
+            break;
+        }
     }
-    func(argc, &argvp[0]);
 
-    return argc;
+    return func(argc, &argvp[0], extobj);
 }
-
-#if FUNCTION_TEST
-#include <stdio.h>
-void callback(int argc, char **argv)
-{
-    int i;
-    for (i = 0; i < argc; i++) {
-        printf("%d: %s\n", i, argv[i]);
-    }
-}
-
-int main(int argc, char **argv)
-{
-    char *str1 = "  This is a test.\n   ";
-    char *str2 = "This is a test.\t  \r  \n  \t  It's good for you.  \n \n The important thing is LIFE-IS-SO-MUCH-BEAUTIFUL.";
-    int i;
-    int n1, n2;
-
-    n1 = ntopt_get_count(str1);
-    for (i = 0; i < n1; i++) {
-        char buf[64];
-        printf("%d: %s\n", i, ntopt_get_text(str1, i, buf, sizeof(buf)));
-    }
-    printf("\n");
-
-    n2 = ntopt_get_count(str2);
-    for (i = 0; i < n2; i++) {
-        char buf[64];
-        printf("%d: %s\n", i, ntopt_get_text(str2, i, buf, sizeof(buf)));
-    }
-    printf("\n");
-
-    ntopt_parse(str1, callback);
-    ntopt_parse(str2, callback);
-
-    return 0;
-}
-#endif
 

@@ -1,5 +1,5 @@
 /**
- * @file text_editor.h
+ * @file ntint.h
  * @author CuBeatSystems
  * @author Shinichiro Nakamura
  * @copyright
@@ -30,44 +30,25 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef TEXT_EDITOR_H
-#define TEXT_EDITOR_H
-
-#include "ntconf.h"
+#ifndef NTINT_H
+#define NTINT_H
 
 /**
- * @brief Maximum length of the text string.
+ * @note
+ * This file provides integer definitions.
+ * You can use #include <stdint.h> if your tool chain have the header.
  */
-#define TEXTEDITOR_MAXLEN   (NTCONF_EDITOR_MAXLEN)
 
-/**
- * @brief Text editor handler.
- */
-typedef struct {
-    char buffer[TEXTEDITOR_MAXLEN]; /**< Buffer for the text string. */
-    int pos;                        /**< Position of the logical cursor. */
-    int len;                        /**< Length of the text string. */
-} text_editor_t;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void text_editor_init(text_editor_t *p);
-int text_editor_insert(text_editor_t *p, char c);
-int text_editor_backspace(text_editor_t *p);
-int text_editor_delete(text_editor_t *p);
-int text_editor_cursor_get_position(text_editor_t *p);
-int text_editor_cursor_head(text_editor_t *p);
-int text_editor_cursor_tail(text_editor_t *p);
-int text_editor_cursor_left(text_editor_t *p);
-int text_editor_cursor_right(text_editor_t *p);
-int text_editor_set_text(text_editor_t *p, char *buf);
-int text_editor_get_text(text_editor_t *p, char *buf, int siz);
-void text_editor_clear(text_editor_t *p);
-
-#ifdef __cplusplus
-}
+#if 1
+#   include <stdint.h>
+#else
+    typedef unsigned char uint8_t;
+    typedef unsigned short uint16_t;
+    typedef unsigned int uint32_t;
+    typedef char int8_t;
+    typedef short int16_t;
+    typedef int int32_t;
+    typedef unsigned int size_t;
 #endif
 
 #endif
