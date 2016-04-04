@@ -33,15 +33,15 @@ const command_table_t cmdlist[] = {
     {NULL, NULL, NULL}
 };
 
-int func_read(char *buf, int cnt);
-int func_write(const char *buf, int cnt);
-int func_cb_ntshell(const char *text);
-void func_cb_ntopt(int argc, char **argv);
+int func_read(char *buf, int cnt, void *extobj);
+int func_write(const char *buf, int cnt, void *extobj);
+int func_cb_ntshell(const char *text, void *extobj);
+int func_cb_ntopt(int argc, char **argv, void * extobj);
 
 /**
  * Serial read function.
  */
-int func_read(char *buf, int cnt) {
+int func_read(char *buf, int cnt, void *extobj) {
 	read(fd, buf, cnt);
     return 0;
 }
@@ -49,7 +49,7 @@ int func_read(char *buf, int cnt) {
 /**
  * Serial write function.
  */
-int func_write(const char *buf, int cnt) {
+int func_write(const char *buf, int cnt, void *extobj) {
 	int n;
 	n = write(fd, buf, cnt);
 	if (n < 0)
@@ -60,16 +60,16 @@ int func_write(const char *buf, int cnt) {
 /**
  * Callback function for ntshell module.
  */
-int func_cb_ntshell(const char *text) {
-    return ntopt_parse(text, func_cb_ntopt);
+int func_cb_ntshell(const char *text, void *extobj) {
+    return ntopt_parse(text, func_cb_ntopt, NULL);
 }
 
 /**
  * Callback function for ntopt module.
  */
-void func_cb_ntopt(int argc, char **argv) {
+int func_cb_ntopt(int argc, char **argv, void * extobj) {
     if (argc == 0) {
-        return;
+        return -1;
     }    
     int execnt = 0;
     const command_table_t *p = &cmdlist[0];
@@ -83,6 +83,7 @@ void func_cb_ntopt(int argc, char **argv) {
     if (execnt == 0) {
         printf("Command not found.\n");
     }
+    return 0;
 }
 
 /**
@@ -111,5 +112,8 @@ else
 n = write(fd, "Start Shell\r\n", 13);
 if (n < 0)
   fputs("write() failed!\n", stderr);
-ntshell_execute(&ntshell, func_read, func_write, func_cb_ntshell);
+ntshell.func_read = func_read;
+ntshell.func_write = func_write;
+ntshell.func_callback = func_cb_ntshell;
+ntshell_execute(&ntshell);
 }
