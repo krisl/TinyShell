@@ -1,2 +1,2 @@
 server: main.c
-	cc -o $@ main.c
+	cc -I ../core ../libs/NaturaltinyShell.a -o $@ main.c

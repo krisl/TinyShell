@@ -4,7 +4,42 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include "ntshell.h"
 #define PORT 8000
+
+static int _read(char *buf, int cnt, void *extobj)
+{
+  const int fd_client = *(int*)extobj;
+  return recv(fd_client, buf, cnt, 0);
+}
+
+static int _write(const char * buf, const int cnt, void * const extobj)
+{
+  const int fd_client = *(int*)extobj;
+   return write(fd_client, buf, cnt);
+}
+
+static int _callback(const char *text, void *extobj)
+{
+  const int fd_client = *(int*)extobj;
+  if (strlen(text) > 0) {
+    printf("User input text: %s\r\n", text);
+  }
+  return 0;
+}
+
+int start_shell(int fd_client)
+{
+  ntshell_t sh;
+  ntshell_init(&sh, _read, _write, _callback, &fd_client);
+  ntshell_set_prompt(&sh, "Hodor>");
+  ntshell_execute(&sh);
+  //char buf[32];
+  //while(recv(fd_client, buf, sizeof buf, 0)) {
+   // write(fd_client, buf, strlen(buf));
+  //}
+  return 0;
+}
 
 int main()
 {
@@ -36,10 +71,7 @@ int main()
 
   while((fd_client = accept(fd_server, NULL, 0))) {
     printf("connection from %i\n", fd_client);
-    char buf[32];
-    while(recv(fd_client, buf, sizeof buf, 0)) {
-      write(fd_client, buf, strlen(buf));
-    }
+    start_shell(fd_client);
     printf("closing\n");
     close(fd_client);
     printf("closed\n");
