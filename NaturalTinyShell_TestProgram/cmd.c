@@ -36,22 +36,22 @@ int sum(int add1,int add2)
 	return add1+add2;
 }
 
-void cmd_foo(int argc, char **argv)
+void cmd_foo(int argc, char **argv, int fd)
+{
+    dprintf(fd, "This is %s\r\n", __func__);
+}
+
+void cmd_bar(int argc, char **argv, int fd)
 {
     printf("This is %s\n", __func__);
 }
 
-void cmd_bar(int argc, char **argv)
+void cmd_baz(int argc, char **argv, int fd)
 {
     printf("This is %s\n", __func__);
 }
 
-void cmd_baz(int argc, char **argv)
-{
-    printf("This is %s\n", __func__);
-}
-
-void cmd_sum(int argc, char **argv)
+void cmd_sum(int argc, char **argv, int fd)
 {
 	int add1,add2,result;
 	sscanf(argv[1],"(%d,%d)",&add1,&add2);
