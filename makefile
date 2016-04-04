@@ -1,8 +1,8 @@
 ﻿VPATH = ./
 CFLAGS = -std=c99
-includefiles := $(wildcard ./*.h)
-sourcefiles := $(wildcard ./*.c)
-objectfiles := $(patsubst %.c,%.o,$(wildcard ./*.c))
+includefiles := $(wildcard ./core/*.h) $(wildcard ./util/*.h)
+sourcefiles := $(wildcard ./core/*.c) $(wildcard ./util/*.c)
+objectfiles := $(patsubst %.c,%.o,$(wildcard ./core/*.c))
 
 all: $(objectfiles)
 

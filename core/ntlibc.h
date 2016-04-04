@@ -2,7 +2,8 @@
 #define NTLIBC_H
 
 #ifndef size_t
-typedef unsigned int size_t;
+#include <string.h>
+//typedef unsigned int size_t;
 #endif
 
 size_t ntlibc_strlen(const char *s);
