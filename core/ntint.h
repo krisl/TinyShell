@@ -4,9 +4,9 @@
  * @author Shinichiro Nakamura
  * @copyright
  * ===============================================================
- * Natural Tiny Shell (NT-Shell) Version 0.3.0
+ * Natural Tiny Shell (NT-Shell) Version 0.3.1
  * ===============================================================
- * Copyright (c) 2010-2015 Shinichiro Nakamura
+ * Copyright (c) 2010-2016 Shinichiro Nakamura
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
