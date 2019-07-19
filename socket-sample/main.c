@@ -1,3 +1,7 @@
+//http://www.binarytides.com/server-client-example-c-sockets-linux/
+//https://gist.github.com/silv3rm00n/5821760
+//http://www.tutorialspoint.com/unix_sockets/socket_server_example.htm
+//http://stackoverflow.com/questions/13669474/multiclient-server-using-fork
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
